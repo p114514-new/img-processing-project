@@ -1,4 +1,8 @@
+import numpy as np
 from PIL import Image
+
+laplace_core1 = np.array([[0, 1, 0], [1, -4, 1], [0, 1, 0]])
+laplace_core2 = np.array([[1, 1, 1], [1, -8, 1], [1, 1, 1]])
 
 
 def set_window_size(root):
