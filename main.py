@@ -180,24 +180,41 @@ class ImageProcessorApp:
 
     ####Add noise Here
     def Add_noise(self,type):
+        Noise = Addnoise()
         if self.original_image:
             self.using_transformations = self.Add_noise
             if type=="Gaussian":
-                self.processed_image = Image.fromarray(gauss(np.array(self.original_image)))
+                self.processed_image = Image.fromarray(Noise.gauss(np.array(self.original_image)))
             elif type=="Salt Pepper":
-                self.processed_image = Image.fromarray(sp_noise(np.array(self.original_image)))
+                self.processed_image = Image.fromarray(Noise.sp_noise(np.array(self.original_image)))
             elif type == "Gamma":
-                self.processed_image = Image.fromarray(gamma_noise(np.array(self.original_image)))
+                self.processed_image = Image.fromarray(Noise.gamma_noise(np.array(self.original_image)))
             elif type == "Uniform":
-                self.processed_image = Image.fromarray(uniform_noise(np.array(self.original_image)))
+                self.processed_image = Image.fromarray(Noise.uniform_noise(np.array(self.original_image)))
             elif type == "Exponential":
-                self.processed_image = Image.fromarray(exponential_noise(np.array(self.original_image)))
+                self.processed_image = Image.fromarray(Noise.exponential_noise(np.array(self.original_image)))
             elif type == "Rayleigh":
-                self.processed_image = Image.fromarray(rayl_noise(np.array(self.original_image)))
+                self.processed_image = Image.fromarray(Noise.rayl_noise(np.array(self.original_image)))
             self.compare_images(self.original_image, self.processed_image)
         else:
             tk.messagebox.showinfo("Error", "No image loaded")
 
+    def para_window(self,func_name):
+        # 创建弹出窗口
+        popup = tk.Toplevel(root)
+        popup.title("Parameters")
+        popup.geometry("200x150")
+
+        def execFunc(func_name):
+            ##TODO:根据函数名获取函数参数个数并传参，然后执行对应函数
+
+            pass
+
+
+        button = tk.Button(popup, text="ok", command=partial(execFunc,func_name))
+        button.pack()
+        button = tk.Button(popup, text="exit", command=popup.destroy)
+        button.pack()
 
 
     def show_previous_image(self):
