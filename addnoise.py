@@ -32,28 +32,28 @@ def sp_noise(image, amount=0.01):
 
 # 3. gamma噪声
 def gamma_noise(img, scale=50):
-    noise = np.random.gamma(shape=1, scale=scale, size=image.shape)
+    noise = np.random.gamma(shape=1, scale=scale, size=img.shape)
     out_img = np.clip(img + noise, 0, 255).astype(np.uint8)  # 将噪声和原始图像进行相加得到加噪后的图像
     return out_img
 
 
 # 4. 瑞利噪声
 def rayl_noise(img, scale=50):
-    noise = np.random.rayleigh(scale=scale, size=image.shape)
+    noise = np.random.rayleigh(scale=scale, size=img.shape)
     out_img = np.clip(img + noise, 0, 255).astype(np.uint8)  # 将噪声和原始图像进行相加得到加噪后的图像
     return out_img
 
 
 # 5. uniform
 def uniform_noise(img, low=0, high=50):
-    noise = np.random.uniform(low, high, size=image.shape)
+    noise = np.random.uniform(low, high, size=img.shape)
     out_img = np.clip(img + noise, 0, 255).astype(np.uint8)  # 将噪声和原始图像进行相加得到加噪后的图像
     return out_img
 
 
 # 6. exponential噪声
 def exponential_noise(img, scale=50):
-    noise = np.random.exponential(scale, size=image.shape)
+    noise = np.random.exponential(scale, size=img.shape)
     out_img = np.clip(img + noise, 0, 255).astype(np.uint8)  # 将噪声和原始图像进行相加得到加噪后的图像
     return out_img
 
