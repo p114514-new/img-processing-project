@@ -72,6 +72,7 @@ class ImageProcessorApp:
         self.original_image = None
         self.image_size = None
         self.using_transformations = None
+        self.last_image = self.original_image
 
     def open_image(self):
         self.current_directory = filedialog.askdirectory()
@@ -240,7 +241,8 @@ class ImageProcessorApp:
             frame.destroy()
 
     ####Add noise Here
-    def Add_noise(self, type):
+    def Add_noise(self,type="default"):
+
         Noise = Addnoise()
         if self.original_image:
             self.using_transformations = self.Add_noise
@@ -256,7 +258,10 @@ class ImageProcessorApp:
                 self.processed_image = Image.fromarray(Noise.exponential_noise(np.array(self.original_image)))
             elif type == "Rayleigh":
                 self.processed_image = Image.fromarray(Noise.rayl_noise(np.array(self.original_image)))
-            self.compare_images(self.original_image, self.processed_image)
+            elif type=="default":
+                self.default()
+            if  self.processed_image:
+               self.compare_images(self.original_image, self.processed_image)
         else:
             tk.messagebox.showinfo("Error", "No image loaded")
 
@@ -277,13 +282,15 @@ class ImageProcessorApp:
     #     button.pack()
 
     def show_previous_image(self):
-        self.root.after_cancel(self.tid)
+        if  self.tid!=0:
+            self.root.after_cancel(self.tid)
         if self.image_list:
             self.current_index = (self.current_index - 1) % len(self.image_list)
             self.load_current_image()
 
     def show_next_image(self):
-        self.root.after_cancel(self.tid)
+        if  self.tid!=0:
+           self.root.after_cancel(self.tid)
         if self.image_list:
             self.current_index = (self.current_index + 1) % len(self.image_list)
             self.load_current_image()
