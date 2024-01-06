@@ -7,13 +7,13 @@ from support import *
 from equalizeHist import *
 from addnoise import *
 from functools import partial
-
+import  threading
 
 class ImageProcessorApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Image Processor")
-
+        self.tid=0
         set_window_size(root)
 
         # Variables
@@ -72,6 +72,7 @@ class ImageProcessorApp:
         self.original_image = None
         self.image_size = None
         self.using_transformations = None
+        self.last_image = self.original_image
 
     def open_image(self):
         self.current_directory = filedialog.askdirectory()
@@ -197,7 +198,7 @@ class ImageProcessorApp:
             kernel_size_scale.pack(side=tk.LEFT, padx=10)
         else:
             # find the frame that holds the kernel size bar and buttons
-            print(self.root.winfo_children())
+            # print(self.root.winfo_children())
             frame = self.root.winfo_children()[3]
             kernel_size_scale = frame.winfo_children()[1]
 
@@ -209,7 +210,11 @@ class ImageProcessorApp:
             self.using_transformations = self.mean_filter
 
             # Schedule the update function to run after 300 milliseconds
-            self.root.after(300, self.update_mean_filter, kernel_size_scale, frame)
+
+            t=self.root.after(300, self.update_mean_filter, kernel_size_scale, frame)
+            self.tid=t
+
+
         else:
             tk.messagebox.showinfo("Error", "No image loaded")
 
@@ -225,13 +230,19 @@ class ImageProcessorApp:
             self.compare_images(self.original_image, self.processed_image)
 
             # Schedule the next update after 300 milliseconds
-            self.root.after(300, self.update_mean_filter, kernel_size_scale, frame)
+            t=self.root.after(300, self.update_mean_filter, kernel_size_scale, frame)
+            self.tid=t
+
+
+
+
         else:
             # Remove the kernel size bar and buttons
             frame.destroy()
 
     ####Add noise Here
-    def Add_noise(self, type):
+    def Add_noise(self,type="default"):
+
         Noise = Addnoise()
         if self.original_image:
             self.using_transformations = self.Add_noise
@@ -247,7 +258,10 @@ class ImageProcessorApp:
                 self.processed_image = Image.fromarray(Noise.exponential_noise(np.array(self.original_image)))
             elif type == "Rayleigh":
                 self.processed_image = Image.fromarray(Noise.rayl_noise(np.array(self.original_image)))
-            self.compare_images(self.original_image, self.processed_image)
+            elif type=="default":
+                self.default()
+            if  self.processed_image:
+               self.compare_images(self.original_image, self.processed_image)
         else:
             tk.messagebox.showinfo("Error", "No image loaded")
 
@@ -268,11 +282,15 @@ class ImageProcessorApp:
     #     button.pack()
 
     def show_previous_image(self):
+        if  self.tid!=0:
+            self.root.after_cancel(self.tid)
         if self.image_list:
             self.current_index = (self.current_index - 1) % len(self.image_list)
             self.load_current_image()
 
     def show_next_image(self):
+        if  self.tid!=0:
+           self.root.after_cancel(self.tid)
         if self.image_list:
             self.current_index = (self.current_index + 1) % len(self.image_list)
             self.load_current_image()
