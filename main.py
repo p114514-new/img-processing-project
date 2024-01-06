@@ -200,7 +200,8 @@ class ImageProcessorApp:
     def hist_qualization(self):
         if self.original_image:
             self.using_transformations = self.hist_qualization
-            self.processed_image = Image.fromarray(Histogram.equalization(np.array(self.original_image)))
+            H=Histogram()
+            self.processed_image = Image.fromarray(H.equalization(np.array(self.original_image)))
             self.compare_images(self.original_image, self.processed_image)
         else:
             tk.messagebox.showinfo("Error", "No image loaded")
