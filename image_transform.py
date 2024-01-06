@@ -1,3 +1,5 @@
+import sys
+
 import numpy as np
 from PIL import Image
 
@@ -84,7 +86,12 @@ def mean_filter(image, kernel_size):
                         neighbors.append(image[i + k, j + l])
 
             # calculate the mean value of the neighbors and assign it to the current pixel
-            mean_value = sum(neighbors) // len(neighbors)
+            python_version = sys.version_info.major
+            python_version_minor = sys.version_info.minor
+            if python_version == 3 and python_version_minor <= 9:
+                mean_value = sum(sum(neighbors) // len(neighbors[0]))
+            else:
+                mean_value = sum(neighbors) // len(neighbors)
             filtered_image[i, j] = mean_value
 
     # convert the image back to PIL image

@@ -122,10 +122,8 @@ class ImageProcessorApp:
 
     def compare_images(self, image1, image2):
         image1 = resize_image(image1, self.image_size, self.canvas.winfo_width(), self.canvas.winfo_height())
-        print(image1.size)
         image2 = resize_image(image2, self.image_size, self.canvas.winfo_width(), self.canvas.winfo_height())
         width = image1.width + 100 + image2.width
-        print(width)
         height = max(image1.height, image2.height)
         system_button_face_rgb = root.winfo_rgb('SystemButtonFace')
         new_image = Image.new("RGBA", (width, height), color=tuple(x // 256 for x in system_button_face_rgb))
@@ -184,25 +182,31 @@ class ImageProcessorApp:
             tk.messagebox.showinfo("Error", "No image loaded")
 
     def mod_window_before_mean_filter(self):
-        # Create a frame to hold the kernel size bar and buttons
-        frame = tk.Frame(self.root)
-        frame.pack(side=tk.TOP, pady=10)
+        if self.using_transformations != self.mean_filter:
+            # Create a frame to hold the kernel size bar and buttons
+            frame = tk.Frame(self.root)
+            frame.pack(side=tk.TOP, pady=10)
 
-        # Label and Scale for kernel size
-        label = tk.Label(frame, text="Select Kernel Size:")
-        label.pack(side=tk.LEFT, padx=10)
+            # Label and Scale for kernel size
+            label = tk.Label(frame, text="Select Kernel Size:")
+            label.pack(side=tk.LEFT, padx=10)
 
-        kernel_size_var = tk.IntVar()
-        kernel_size_scale = tk.Scale(frame, from_=1, to=15, orient=tk.HORIZONTAL, variable=kernel_size_var,
-                                     resolution=2)
-        kernel_size_scale.pack(side=tk.LEFT, padx=10)
+            kernel_size_var = tk.IntVar()
+            kernel_size_scale = tk.Scale(frame, from_=1, to=15, orient=tk.HORIZONTAL, variable=kernel_size_var,
+                                         resolution=2)
+            kernel_size_scale.pack(side=tk.LEFT, padx=10)
+        else:
+            # find the frame that holds the kernel size bar and buttons
+            print(self.root.winfo_children())
+            frame = self.root.winfo_children()[3]
+            kernel_size_scale = frame.winfo_children()[1]
 
         return kernel_size_scale, frame
 
     def mean_filter(self):
         if self.original_image:
-            self.using_transformations = self.mean_filter
             kernel_size_scale, frame = self.mod_window_before_mean_filter()
+            self.using_transformations = self.mean_filter
 
             # Schedule the update function to run after 300 milliseconds
             self.root.after(300, self.update_mean_filter, kernel_size_scale, frame)
