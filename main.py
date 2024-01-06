@@ -101,7 +101,7 @@ class ImageProcessorApp:
             self.image_list = [f for f in os.listdir(self.current_directory) if
                                f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp'))]
             if not self.image_list:
-                tk.messagebox.showinfo("Error", "The directory {} does not contain any images, please check you "
+                tk.messagebox.showinfo("Error", "The directory {} does not contain any images, please check your "
                                                 "directory.".format(self.current_directory))
                 self.current_directory = ""
                 return
@@ -181,26 +181,133 @@ class ImageProcessorApp:
         else:
             tk.messagebox.showinfo("Error", "No image loaded")
 
+    def mod_window_before_exp_grayscale(self):
+        if self.using_transformations != self.exp_grayscale:
+            # Create a frame to hold the kernel size bar and buttons
+            frame = tk.Frame(self.root)
+            frame.pack(side=tk.TOP, pady=10)
+
+            # Label and Scale for kernel size
+            label = tk.Label(frame, text="Select Gamma:")
+            label.pack(side=tk.LEFT, padx=10)
+
+            gamma_var = tk.IntVar()
+            gamma_scale = tk.Scale(frame, from_=0.2, to=5, orient=tk.HORIZONTAL, variable=gamma_var,
+                                   resolution=0.1)
+            gamma_scale.pack(side=tk.LEFT, padx=10)
+        else:
+            # find the frame that holds the kernel size bar and buttons
+            # print(self.root.winfo_children())
+            frame = self.root.winfo_children()[3]
+            gamma_scale = frame.winfo_children()[1]
+
+        return gamma_scale, frame
+
     def exp_grayscale(self):
         if self.original_image:
+            gamma_scale, frame = self.mod_window_before_exp_grayscale()
             self.using_transformations = self.exp_grayscale
-            self.processed_image = power_law_image(self.original_image, 1.5, 1)
-            self.compare_images(self.original_image, self.processed_image)
+            self.cache1 = gamma_scale
+
+            # Schedule the update function to run after 100 milliseconds
+            t = self.root.after(100, self.update_exp_grayscale, gamma_scale, frame)
+            self.tid = t
+
         else:
             tk.messagebox.showinfo("Error", "No image loaded")
 
+    def update_exp_grayscale(self, gamma_scale, frame):
+        if self.using_transformations == self.exp_grayscale:
+            # fast skip
+            if self.cache1 == gamma_scale.get():
+                # Schedule the next update after 300 milliseconds
+                t = self.root.after(300, self.update_exp_grayscale, gamma_scale, frame)
+                self.tid = t
+                return
+
+            # Get the kernel size from the scale
+            self.cache1 = gamma = gamma_scale.get()
+
+            # Perform the mean filter operation
+            self.processed_image = power_law_image(self.original_image, gamma, 1)
+
+            # Display the original and processed images
+            self.compare_images(self.original_image, self.processed_image)
+
+            # Schedule the next update after 100 milliseconds
+            t = self.root.after(100, self.update_exp_grayscale, gamma_scale, frame)
+            self.tid = t
+            return
+
+        else:
+            # Remove the kernel size bar and buttons
+            frame.destroy()
+            return
+
+
+    def mod_window_before_gamma_correction(self):
+        if self.using_transformations != self.gamma_correction:
+            # Create a frame to hold the kernel size bar and buttons
+            frame = tk.Frame(self.root)
+            frame.pack(side=tk.TOP, pady=10)
+
+            # Label and Scale for gamma value
+            label = tk.Label(frame, text="Select Gamma:")
+            label.pack(side=tk.LEFT, padx=10)
+
+            gamma_var = tk.IntVar()
+            gamma_scale = tk.Scale(frame, from_=0.5, to=1.2, orient=tk.HORIZONTAL, variable=gamma_var,
+                                   resolution=0.03)
+            gamma_scale.pack(side=tk.LEFT, padx=10)
+        else:
+            # print(self.root.winfo_children())
+            frame = self.root.winfo_children()[3]
+            gamma_scale = frame.winfo_children()[1]
+
+        return gamma_scale, frame
+
     def gamma_correction(self):
         if self.original_image:
+            gamma_scale, frame = self.mod_window_before_gamma_correction()
             self.using_transformations = self.gamma_correction
-            self.processed_image = gamma_correction(self.original_image, 0.8, 10)
+            self.cache1 = gamma_scale
+
+            # Schedule the update function to run after 100 milliseconds
+            t = self.root.after(100, self.update_gamma_correction, gamma_scale, frame)
+            self.tid = t
+
+    def update_gamma_correction(self, gamma_scale, frame):
+        if self.using_transformations == self.gamma_correction:
+            # fast skip
+            if self.cache1 == gamma_scale.get():
+                # Schedule the next update after 300 milliseconds
+                t = self.root.after(300, self.update_gamma_correction, gamma_scale, frame)
+                self.tid = t
+                return
+
+            # Get the kernel size from the scale
+            self.cache1 = gamma = gamma_scale.get()
+
+            # Perform the mean filter operation
+            self.processed_image = gamma_correction(self.original_image, gamma, 10)
+
+            # Display the original and processed images
             self.compare_images(self.original_image, self.processed_image)
+
+            # Schedule the next update after 100 milliseconds
+            t = self.root.after(100, self.update_gamma_correction, gamma_scale, frame)
+            self.tid = t
+            return
+
         else:
-            tk.messagebox.showinfo("Error", "No image loaded")
+            # Remove the kernel size bar and buttons
+            frame.destroy()
+            return
 
     def hist_qualization(self):
         if self.original_image:
             self.using_transformations = self.hist_qualization
-            H=Histogram()
+            H = Histogram()
             self.processed_image = Image.fromarray(H.equalization(np.array(self.original_image)))
             self.compare_images(self.original_image, self.processed_image)
         else:
