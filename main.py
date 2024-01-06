@@ -233,35 +233,124 @@ class ImageProcessorApp:
             t=self.root.after(300, self.update_mean_filter, kernel_size_scale, frame)
             self.tid=t
 
-
-
-
         else:
             # Remove the kernel size bar and buttons
             frame.destroy()
 
     ####Add noise Here
+    def Add_noise_before(self):
+        if self.using_transformations != self.Add_noise:
+            frame = tk.Frame(self.root)
+            frame.pack(side=tk.TOP, pady=10)
+            print("ok2")
+
+        else:
+            frame = self.root.winfo_children()[3]
+            for widget in frame.winfo_children():
+                widget.destroy()
+            print("ok3")
+
+        return frame
     def Add_noise(self,type="default"):
+        frame=self.Add_noise_before()
+        for widget in frame.winfo_children():
+            widget.destroy()
 
         Noise = Addnoise()
         if self.original_image:
-            self.using_transformations = self.Add_noise
             if type == "Gaussian":
+                # Label and Scale for kernel size
+                label = tk.Label(frame, text="enter mean:")
+                label.pack(side=tk.LEFT, padx=10)
+                mean_e = tk.Entry(frame)
+                mean_e.pack()
+                label = tk.Label(frame, text="enter var:")
+                label.pack(side=tk.LEFT, padx=10)
+                var_e = tk.Entry(frame)
+                var_e.pack()
                 self.processed_image = Image.fromarray(Noise.gauss(np.array(self.original_image)))
+                def mymodify():
+                    self.processed_image = Image.fromarray(Noise.gauss(np.array(self.original_image),float(mean_e.get()),float(var_e.get())))
+
+                button = tk.Button(frame, text="ok", command=mymodify)
+                button.pack()
+
             elif type == "Salt Pepper":
+                # Label and Scale for kernel size
+                label = tk.Label(frame, text="enter amount:")
+                label.pack(side=tk.LEFT, padx=10)
+                e = tk.Entry(frame)
+                e.pack()
                 self.processed_image = Image.fromarray(Noise.sp_noise(np.array(self.original_image)))
+
+                def mymodify():
+
+                    self.processed_image =Image.fromarray(Noise.sp_noise(np.array(self.original_image),float(e.get())))
+                    self.compare_images(self.original_image, self.processed_image)
+
+                button = tk.Button(frame, text="ok", command=mymodify)
+                button.pack()
             elif type == "Gamma":
+                label = tk.Label(frame, text="enter scale:")
+                label.pack(side=tk.LEFT, padx=10)
+                e = tk.Entry(frame)
+                e.pack()
                 self.processed_image = Image.fromarray(Noise.gamma_noise(np.array(self.original_image)))
+
+                def mymodify():
+                    self.processed_image=Image.fromarray(Noise.gamma_noise(np.array(self.original_image), float(e.get())))
+                    self.compare_images(self.original_image, self.processed_image)
+
+                button = tk.Button(frame, text="ok", command=mymodify)
+                button.pack()
             elif type == "Uniform":
+                label = tk.Label(frame, text="enter scale:")
+                label.pack(side=tk.LEFT, padx=10)
+                e = tk.Entry(frame)
+                e.pack()
                 self.processed_image = Image.fromarray(Noise.uniform_noise(np.array(self.original_image)))
+
+                def mymodify():
+                    self.processed_image =Image.fromarray(Noise.uniform_noise(np.array(self.original_image), float(e.get())))
+                    self.compare_images(self.original_image, self.processed_image)
+
+                button = tk.Button(frame, text="ok", command=mymodify)
+                button.pack()
             elif type == "Exponential":
+                label = tk.Label(frame, text="enter scale:")
+                label.pack(side=tk.LEFT, padx=10)
+                e = tk.Entry(frame)
+                e.pack()
                 self.processed_image = Image.fromarray(Noise.exponential_noise(np.array(self.original_image)))
+
+                def mymodify():
+                    self.processed_image =Image.fromarray(Noise.exponential_noise(np.array(self.original_image), float(e.get())))
+                    self.compare_images(self.original_image, self.processed_image)
+
+                button = tk.Button(frame, text="ok", command=mymodify)
+                button.pack()
             elif type == "Rayleigh":
+                label = tk.Label(frame, text="enter scale:")
+                label.pack(side=tk.LEFT, padx=10)
+                e = tk.Entry(frame)
+                e.pack()
                 self.processed_image = Image.fromarray(Noise.rayl_noise(np.array(self.original_image)))
+
+                def mymodify():
+                    self.processed_image =Image.fromarray(Noise.rayl_noise(np.array(self.original_image), float(e.get())))
+                    self.compare_images(self.original_image, self.processed_image)
+
+                button = tk.Button(frame, text="ok", command=mymodify)
+                button.pack()
             elif type=="default":
                 self.default()
+
             if  self.processed_image:
                self.compare_images(self.original_image, self.processed_image)
+            self.using_transformations = self.Add_noise
+
+
+
         else:
             tk.messagebox.showinfo("Error", "No image loaded")
 
