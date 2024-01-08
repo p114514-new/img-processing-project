@@ -47,11 +47,12 @@ def gamma_correction(image, gamma, c):
     # convert the image to numpy array
     image = np.array(image, dtype=np.int32)
 
+    # apply gamma correction
     image = np.power(image / c, gamma) * c
-    image = image.astype(np.uint8)
-    image = clip(image)
 
     # convert the image back to PIL image
+    image = image.astype(np.uint8)
+    image = clip(image)
     image = Image.fromarray(image)
 
     return image
