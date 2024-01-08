@@ -2,18 +2,20 @@ import cv2
 import numpy as np
 import random
 import matplotlib.pyplot as plt
-
+from PIL import Image, ImageTk, ImageFilter
 
 # 读取图像
 
 class Addnoise:
     #1. 高斯噪声
     def gauss(self,img, mean=0, var=0.01):
+
         img = np.array(img / 255, dtype=float)#灰度值除以255以便后续与高斯分布相加
         noise = np.random.normal(mean, var ** 0.5, img.shape)
         out_img=noise+img
         out_img = np.clip(out_img, 0, 1.0) # 将噪声和原始图像进行相加得到加噪后的图像
         out_img = np.uint8(out_img * 255)#恢复灰度值范围到0-255
+        # return Image.fromarray(out_img)
         return out_img
 
 
@@ -29,6 +31,7 @@ class Addnoise:
 
     # 2. 椒盐噪声
     def sp_noise_single(self,image, amount=0.01):
+        image = np.array(image)
         output = image
         threshold = 1 - amount  # 设置一个阙值
         # amount 越大，255的值越多
@@ -43,6 +46,7 @@ class Addnoise:
         return output
 
     def sp_noise(self, img,amount=0.01):
+
         channels = cv2.split(img)  # 通道分解
         ch = []
         for i in range(0, len(channels)):
@@ -50,42 +54,51 @@ class Addnoise:
         result = ch[0]
         for i in range(1, len(channels)):
             result = cv2.merge([result, ch[i]])
+        # return  Image.fromarray(result)
         return result
 
     # 3. gamma噪声
     def gamma_noise(self,img, scale=0.1):
+
         img = np.array(img / 255, dtype=float)  # 灰度值除以255以便后续分布相加
         noise = np.random.gamma(shape=1, scale=scale, size=img.shape)
         out_img = noise + img
         out_img = np.clip(out_img, 0, 1.0)  # 将噪声和原始图像进行相加得到加噪后的图像
         out_img = np.uint8(out_img * 255)  # 恢复灰度值范围到0-255
+        # return  Image.fromarray(out_img)
         return out_img
 
 
     # 4. 瑞利噪声
     def rayl_noise(self,img, scale=0.1):
+
         img = np.array(img / 255, dtype=float)  # 灰度值除以255以便后续分布相加
         noise = np.random.rayleigh(scale=scale, size=img.shape)
         out_img = noise + img
         out_img = np.clip(out_img, 0, 1.0)  # 将噪声和原始图像进行相加得到加噪后的图像
         out_img = np.uint8(out_img * 255)  # 恢复灰度值范围到0-255
+        # return  Image.fromarray(out_img)
         return out_img
 
     # 5. uniform
     def uniform_noise(self,img, low=0, high=0.1):
+
         img = np.array(img / 255, dtype=float)  # 灰度值除以255以便后续分布相加
         noise = np.random.uniform(low, high, size=img.shape)
         out_img = noise + img
         out_img = np.clip(out_img, 0, 1.0)  # 将噪声和原始图像进行相加得到加噪后的图像
         out_img = np.uint8(out_img * 255)  # 恢复灰度值范围到0-255
+        # return  Image.fromarray(out_img)
         return out_img
     # 6. exponential噪声
     def exponential_noise(self,img, scale=0.1):
+
         img = np.array(img / 255, dtype=float)  # 灰度值除以255以便后续分布相加
         noise = np.random.exponential(scale, size=img.shape)
         out_img = noise + img
         out_img = np.clip(out_img, 0, 1.0)  # 将噪声和原始图像进行相加得到加噪后的图像
         out_img = np.uint8(out_img * 255)  # 恢复灰度值范围到0-255
+        # return  Image.fromarray(out_img)
         return out_img
 
 
