@@ -69,12 +69,12 @@ class ImageProcessorApp:
         Noise_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="Add noise", menu=Noise_menu)
         Noise_menu.add_command(label="Default", command=self.default)
-        Noise_menu.add_command(label="Gaussian", command=partial(self.Add_noise, "Gaussian"))
-        Noise_menu.add_command(label="Salt Pepper", command=partial(self.Add_noise, "Salt Pepper"))
-        Noise_menu.add_command(label="Gamma", command=partial(self.Add_noise, "Gamma"))
-        Noise_menu.add_command(label="Uniform", command=partial(self.Add_noise, "Uniform"))
-        Noise_menu.add_command(label="Exponential", command=partial(self.Add_noise, "Exponential"))
-        Noise_menu.add_command(label="Rayleigh", command=partial(self.Add_noise, "Rayleigh"))
+        Noise_menu.add_command(label="Gaussian", command=partial(self.Add_noise_type, "Gaussian"))
+        Noise_menu.add_command(label="Salt Pepper", command=partial(self.Add_noise_type, "Salt Pepper"))
+        Noise_menu.add_command(label="Gamma", command=partial(self.Add_noise_type, "Gamma"))
+        Noise_menu.add_command(label="Uniform", command=partial(self.Add_noise_type, "Uniform"))
+        Noise_menu.add_command(label="Exponential", command=partial(self.Add_noise_type, "Exponential"))
+        Noise_menu.add_command(label="Rayleigh", command=partial(self.Add_noise_type, "Rayleigh"))
 
         # Navigation Buttons
         self.nav_frame = tk.Frame(root)
@@ -172,8 +172,16 @@ class ImageProcessorApp:
     def default(self):
         self.using_transformations = None
         self.display_image(self.original_image)
+        try:
+            if len(self.root.winfo_children()) >= 4:
+                frame = self.root.winfo_children()[3]
+                frame.destroy()
+        except:
+            pass
+
 
     def blur_image(self):
+        self.default()
         if self.original_image:
             self.using_transformations = self.blur_image
             self.processed_image = self.original_image.filter(ImageFilter.BLUR)
@@ -204,6 +212,7 @@ class ImageProcessorApp:
         return gamma_scale, frame
 
     def exp_grayscale(self):
+        self.default()
         if self.original_image:
             gamma_scale, frame = self.mod_window_before_exp_grayscale()
             self.using_transformations = self.exp_grayscale
@@ -267,6 +276,7 @@ class ImageProcessorApp:
         return gamma_scale, frame
 
     def gamma_correction(self):
+        self.default()
         if self.original_image:
             gamma_scale, frame = self.mod_window_before_gamma_correction()
             self.using_transformations = self.gamma_correction
@@ -305,6 +315,7 @@ class ImageProcessorApp:
             return
 
     def hist_qualization(self):
+        self.default()
         if self.original_image:
             self.using_transformations = self.hist_qualization
             H = Histogram()
@@ -336,6 +347,7 @@ class ImageProcessorApp:
         return kernel_size_scale, frame
 
     def mean_filter(self):
+        self.default()
         if self.original_image:
             kernel_size_scale, frame = self.mod_window_before_mean_filter()
             self.cache1 = kernel_size_scale
@@ -400,6 +412,7 @@ class ImageProcessorApp:
         return kernel_size_scale, frame
 
     def median_filter(self):
+        self.default()
         if self.original_image:
             kernel_size_scale, frame = self.mod_window_before_median_filter()
             self.using_transformations = self.median_filter
@@ -438,6 +451,7 @@ class ImageProcessorApp:
             frame.destroy()
 
     def invert(self):
+        self.default()
         if self.original_image:
             self.using_transformations = self.invert
             self.processed_image = invert(self.original_image)
@@ -466,6 +480,7 @@ class ImageProcessorApp:
         return kernel_type_scale, frame
 
     def laplace_filter(self):
+        self.default()
         if self.original_image:
             kernel_type_scale, frame = self.mod_window_before_laplace_filter()
             self.using_transformations = self.laplace_filter
@@ -509,129 +524,172 @@ class ImageProcessorApp:
             return
 
     ####Add noise Here
+    def Add_noise_type(self,type):
+        self.noisetype=type
+        self.Add_noise()
     def Add_noise_before(self):
         if self.using_transformations != self.Add_noise:
             frame = tk.Frame(self.root)
             frame.pack(side=tk.TOP, pady=10)
-            print("ok2")
-
         else:
             frame = self.root.winfo_children()[3]
-            for widget in frame.winfo_children():
-                widget.destroy()
-            print("ok3")
-
         return frame
-
-    def Add_noise(self, type="default"):
-        frame = self.Add_noise_before()
-        for widget in frame.winfo_children():
-            widget.destroy()
-
+    def Add_noise(self):
+        frame=self.Add_noise_before()
         Noise = Addnoise()
         if self.original_image:
-            if type == "Gaussian":
+
+            if self.noisetype == "Gaussian":
                 # Label and Scale for kernel size
+                for widget in frame.winfo_children():
+                    widget.destroy()
                 label = tk.Label(frame, text="enter mean:")
-                label.pack(side=tk.LEFT, padx=10)
+                label.pack()
                 mean_e = tk.Entry(frame)
                 mean_e.pack()
                 label = tk.Label(frame, text="enter var:")
-                label.pack(side=tk.LEFT, padx=10)
+                label.pack()
                 var_e = tk.Entry(frame)
                 var_e.pack()
-                self.processed_image = Image.fromarray(Noise.gauss(np.array(self.original_image)))
-
                 def mymodify():
+                  try:
                     self.processed_image = Image.fromarray(
                         Noise.gauss(np.array(self.original_image), float(mean_e.get()), float(var_e.get())))
-
+                    self.compare_images(self.original_image, self.processed_image)
+                    messagebox.showinfo("success", "Success!")
+                  except Exception as a:
+                      messagebox.showerror("Error", "Wrong input")
                 button = tk.Button(frame, text="ok", command=mymodify)
                 button.pack()
 
-            elif type == "Salt Pepper":
+
+                self.processed_image = Image.fromarray(Noise.gauss(np.array(self.original_image)))
+
+
+            elif  self.noisetype == "Salt Pepper":
                 # Label and Scale for kernel size
-                label = tk.Label(frame, text="enter amount:")
-                label.pack(side=tk.LEFT, padx=10)
+                for widget in frame.winfo_children():
+                    widget.destroy()
+                label = tk.Label(frame, text="enter amount (0~1):")
+                label.pack()
                 e = tk.Entry(frame)
                 e.pack()
-                self.processed_image = Image.fromarray(Noise.sp_noise(np.array(self.original_image)))
 
                 def mymodify():
-
+                  try:
                     self.processed_image = Image.fromarray(
                         Noise.sp_noise(np.array(self.original_image), float(e.get())))
                     self.compare_images(self.original_image, self.processed_image)
+                    messagebox.showinfo("success", "Success!")
+                  except Exception as a:
+                      messagebox.showerror("Error", "Wrong input")
 
                 button = tk.Button(frame, text="ok", command=mymodify)
                 button.pack()
-            elif type == "Gamma":
+
+
+                self.processed_image = Image.fromarray(Noise.sp_noise(np.array(self.original_image)))
+
+            elif  self.noisetype == "Gamma":
+                for widget in frame.winfo_children():
+                    widget.destroy()
                 label = tk.Label(frame, text="enter scale:")
-                label.pack(side=tk.LEFT, padx=10)
+                label.pack()
                 e = tk.Entry(frame)
                 e.pack()
-                self.processed_image = Image.fromarray(Noise.gamma_noise(np.array(self.original_image)))
 
                 def mymodify():
+                   try:
                     self.processed_image = Image.fromarray(
                         Noise.gamma_noise(np.array(self.original_image), float(e.get())))
                     self.compare_images(self.original_image, self.processed_image)
+                    messagebox.showinfo("success", "Success!")
+                   except Exception as a:
+                       messagebox.showerror("Error", "Wrong input")
 
                 button = tk.Button(frame, text="ok", command=mymodify)
                 button.pack()
-            elif type == "Uniform":
-                label = tk.Label(frame, text="enter scale:")
-                label.pack(side=tk.LEFT, padx=10)
-                e = tk.Entry(frame)
-                e.pack()
+
+
+                self.processed_image = Image.fromarray(Noise.gamma_noise(np.array(self.original_image)))
+
+            elif  self.noisetype == "Uniform":
+                for widget in frame.winfo_children():
+                    widget.destroy()
+                label = tk.Label(frame, text="enter low (0~1):")
+                label.pack()
+                e1 = tk.Entry(frame)
+                e1.pack()
+                label = tk.Label(frame, text="enter high (0~1):")
+                label.pack()
+                e2 = tk.Entry(frame)
+                e2.pack()
+                def mymodify():
+                   try:
+                    self.processed_image = Image.fromarray(
+                        Noise.uniform_noise(np.array(self.original_image), float(e1.get()), float(e2.get())))
+                    self.compare_images(self.original_image, self.processed_image)
+                    messagebox.showinfo("success", "Success!")
+                   except Exception as a:
+                       messagebox.showerror("Error", "Wrong input")
+
+                button = tk.Button(frame, text="ok", command=mymodify)
+                button.pack()
                 self.processed_image = Image.fromarray(Noise.uniform_noise(np.array(self.original_image)))
 
-                def mymodify():
-                    self.processed_image = Image.fromarray(
-                        Noise.uniform_noise(np.array(self.original_image), float(e.get())))
-                    self.compare_images(self.original_image, self.processed_image)
-
-                button = tk.Button(frame, text="ok", command=mymodify)
-                button.pack()
-            elif type == "Exponential":
-                label = tk.Label(frame, text="enter scale:")
-                label.pack(side=tk.LEFT, padx=10)
+            elif  self.noisetype == "Exponential":
+                for widget in frame.winfo_children():
+                    widget.destroy()
+                label = tk.Label(frame, text="enter scale(0-1):")
+                label.pack()
                 e = tk.Entry(frame)
                 e.pack()
-                self.processed_image = Image.fromarray(Noise.exponential_noise(np.array(self.original_image)))
-
                 def mymodify():
+                  try:
                     self.processed_image = Image.fromarray(
                         Noise.exponential_noise(np.array(self.original_image), float(e.get())))
                     self.compare_images(self.original_image, self.processed_image)
+                    messagebox.showinfo("success", "Success!")
+                  except Exception as a:
+                    messagebox.showerror("Error", "Wrong input")
 
                 button = tk.Button(frame, text="ok", command=mymodify)
                 button.pack()
-            elif type == "Rayleigh":
-                label = tk.Label(frame, text="enter scale:")
-                label.pack(side=tk.LEFT, padx=10)
+                self.processed_image = Image.fromarray(Noise.exponential_noise(np.array(self.original_image)))
+
+            elif  self.noisetype == "Rayleigh":
+                for widget in frame.winfo_children():
+                    widget.destroy()
+                label = tk.Label(frame, text="enter scale (0~1):")
+                label.pack()
                 e = tk.Entry(frame)
                 e.pack()
-                self.processed_image = Image.fromarray(Noise.rayl_noise(np.array(self.original_image)))
 
                 def mymodify():
+                  try:
                     self.processed_image = Image.fromarray(
                         Noise.rayl_noise(np.array(self.original_image), float(e.get())))
                     self.compare_images(self.original_image, self.processed_image)
+                    messagebox.showinfo("success", "Success!")
+                  except Exception as a:
+                    messagebox.showerror("Error", "Wrong input")
+
+
 
                 button = tk.Button(frame, text="ok", command=mymodify)
                 button.pack()
-            elif type == "default":
-                self.default()
+                self.processed_image = Image.fromarray(Noise.rayl_noise(np.array(self.original_image)))
 
-            if self.processed_image:
-                self.compare_images(self.original_image, self.processed_image)
+
+            if  self.processed_image:
+               self.compare_images(self.original_image, self.processed_image)
             self.using_transformations = self.Add_noise
 
         else:
             tk.messagebox.showinfo("Error", "No image loaded")
 
     def fourier_spectrum(self):
+        self.default()
         if self.original_image:
             self.using_transformations = self.fourier_spectrum
             self.processed_image = fourier_transform(self.original_image)
@@ -662,6 +720,7 @@ class ImageProcessorApp:
         return sigma_scale, frame
 
     def g_low_pass_filter(self):
+        self.default()
         if self.original_image:
             sigma_scale, frame = self.mod_window_before_g_low_pass_filter()
             self.using_transformations = self.g_low_pass_filter
@@ -675,6 +734,7 @@ class ImageProcessorApp:
             tk.messagebox.showinfo("Error", "No image loaded")
 
     def update_g_low_pass_filter(self, sigma_scale, frame):
+        self.default()
         if self.using_transformations == self.g_low_pass_filter:
             # fast skip
             if self.cache1 == sigma_scale.get():
@@ -725,6 +785,7 @@ class ImageProcessorApp:
         return sigma_scale, frame
 
     def g_high_pass_filter(self):
+        self.default()
         if self.original_image:
             sigma_scale, frame = self.mod_window_before_g_high_pass_filter()
             self.using_transformations = self.g_high_pass_filter
@@ -795,10 +856,11 @@ class ImageProcessorApp:
         return order_scale, cutoff_scale, frame
 
     def b_low_pass_filter(self):
+        self.default()
         if self.original_image:
             order_scale, cutoff_scale, frame = self.mod_window_before_b_low_pass_filter()
             self.using_transformations = self.b_low_pass_filter
-            self.cache1 = int(order_scale)
+            self.cache1 = int(order_scale.get())
             self.cache2 = cutoff_scale
 
             # Schedule the update function to run after 100 milliseconds
@@ -869,12 +931,12 @@ class ImageProcessorApp:
         return order_scale, cutoff_scale, frame
 
     def b_high_pass_filter(self):
+        self.default()
         if self.original_image:
             order_scale, cutoff_scale, frame = self.mod_window_before_b_high_pass_filter()
             self.using_transformations = self.b_high_pass_filter
-            self.cache1 = int(order_scale)
+            self.cache1 = int(order_scale.get())
             self.cache2 = cutoff_scale
-
             # Schedule the update function to run after 100 milliseconds
             t = self.root.after(100, self.update_b_high_pass_filter, order_scale, cutoff_scale, frame)
             self.tid = t
@@ -933,6 +995,7 @@ class ImageProcessorApp:
         return k_scale, frame
 
     def inverse_filter(self):
+        self.default()
         if self.original_image:
             k_scale, frame = self.mod_window_before_inverse_filter()
             self.using_transformations = self.inverse_filter
@@ -1004,6 +1067,7 @@ class ImageProcessorApp:
         return k_scale, gamma_scale, frame
 
     def wiener_filter(self):
+        self.default()
         if self.original_image:
             k_scale, gamma_scale, frame = self.mod_window_before_wiener_filter()
             self.using_transformations = self.wiener_filter
@@ -1044,6 +1108,8 @@ class ImageProcessorApp:
             # Remove the k and gamma value bar and buttons
             frame.destroy()
 
+
+
     # def para_window(self, func_name):
     #     # 创建弹出窗口
     #     popup = tk.Toplevel(root)
@@ -1061,6 +1127,7 @@ class ImageProcessorApp:
     #     button.pack()
 
     def show_previous_image(self):
+        self.default()
         if self.tid != 0:
             self.root.after_cancel(self.tid)
         if self.image_list:
@@ -1068,6 +1135,7 @@ class ImageProcessorApp:
             self.load_current_image()
 
     def show_next_image(self):
+        self.default()
         if self.tid != 0:
             self.root.after_cancel(self.tid)
         if self.image_list:
@@ -1078,4 +1146,6 @@ class ImageProcessorApp:
 if __name__ == "__main__":
     root = tk.Tk()
     app = ImageProcessorApp(root)
+
+
     root.mainloop()
