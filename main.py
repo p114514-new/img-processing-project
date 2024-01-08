@@ -258,11 +258,7 @@ class ImageProcessorApp:
 
         return frame
     def Add_noise(self):
-
         frame=self.Add_noise_before()
-
-
-
         Noise = Addnoise()
         if self.original_image:
 
@@ -278,11 +274,14 @@ class ImageProcessorApp:
                 label.pack()
                 var_e = tk.Entry(frame)
                 var_e.pack()
-
                 def mymodify():
+                  try:
                     self.processed_image = Image.fromarray(
                         Noise.gauss(np.array(self.original_image), float(mean_e.get()), float(var_e.get())))
-
+                    self.compare_images(self.original_image, self.processed_image)
+                    messagebox.showinfo("success", "Success!")
+                  except Exception as a:
+                      messagebox.showerror("Error", "Wrong input")
                 button = tk.Button(frame, text="ok", command=mymodify)
                 button.pack()
 
@@ -294,15 +293,19 @@ class ImageProcessorApp:
                 # Label and Scale for kernel size
                 for widget in frame.winfo_children():
                     widget.destroy()
-                label = tk.Label(frame, text="enter amount:")
+                label = tk.Label(frame, text="enter amount (0~1):")
                 label.pack()
                 e = tk.Entry(frame)
                 e.pack()
 
                 def mymodify():
+                  try:
                     self.processed_image = Image.fromarray(
                         Noise.sp_noise(np.array(self.original_image), float(e.get())))
                     self.compare_images(self.original_image, self.processed_image)
+                    messagebox.showinfo("success", "Success!")
+                  except Exception as a:
+                      messagebox.showerror("Error", "Wrong input")
 
                 button = tk.Button(frame, text="ok", command=mymodify)
                 button.pack()
@@ -319,13 +322,16 @@ class ImageProcessorApp:
                 e.pack()
 
                 def mymodify():
+                   try:
                     self.processed_image = Image.fromarray(
                         Noise.gamma_noise(np.array(self.original_image), float(e.get())))
                     self.compare_images(self.original_image, self.processed_image)
+                    messagebox.showinfo("success", "Success!")
+                   except Exception as a:
+                       messagebox.showerror("Error", "Wrong input")
 
                 button = tk.Button(frame, text="ok", command=mymodify)
                 button.pack()
-
 
 
                 self.processed_image = Image.fromarray(Noise.gamma_noise(np.array(self.original_image)))
@@ -333,15 +339,22 @@ class ImageProcessorApp:
             elif  self.noisetype == "Uniform":
                 for widget in frame.winfo_children():
                     widget.destroy()
-                label = tk.Label(frame, text="enter scale:")
+                label = tk.Label(frame, text="enter low (0~1):")
                 label.pack()
-                e = tk.Entry(frame)
-                e.pack()
-
+                e1 = tk.Entry(frame)
+                e1.pack()
+                label = tk.Label(frame, text="enter high (0~1):")
+                label.pack()
+                e2 = tk.Entry(frame)
+                e2.pack()
                 def mymodify():
+                   try:
                     self.processed_image = Image.fromarray(
-                        Noise.uniform_noise(np.array(self.original_image), float(e.get())))
+                        Noise.uniform_noise(np.array(self.original_image), float(e1.get()), float(e2.get())))
                     self.compare_images(self.original_image, self.processed_image)
+                    messagebox.showinfo("success", "Success!")
+                   except Exception as a:
+                       messagebox.showerror("Error", "Wrong input")
 
                 button = tk.Button(frame, text="ok", command=mymodify)
                 button.pack()
@@ -352,34 +365,42 @@ class ImageProcessorApp:
             elif  self.noisetype == "Exponential":
                 for widget in frame.winfo_children():
                     widget.destroy()
-                label = tk.Label(frame, text="enter scale:")
+                label = tk.Label(frame, text="enter scale(0-1):")
                 label.pack()
                 e = tk.Entry(frame)
                 e.pack()
 
                 def mymodify():
+                  try:
                     self.processed_image = Image.fromarray(
                         Noise.exponential_noise(np.array(self.original_image), float(e.get())))
                     self.compare_images(self.original_image, self.processed_image)
+                    messagebox.showinfo("success", "Success!")
+                  except Exception as a:
+                    messagebox.showerror("Error", "Wrong input")
 
                 button = tk.Button(frame, text="ok", command=mymodify)
                 button.pack()
-
-
                 self.processed_image = Image.fromarray(Noise.exponential_noise(np.array(self.original_image)))
 
             elif  self.noisetype == "Rayleigh":
                 for widget in frame.winfo_children():
                     widget.destroy()
-                label = tk.Label(frame, text="enter scale:")
+                label = tk.Label(frame, text="enter scale (0~1):")
                 label.pack()
                 e = tk.Entry(frame)
                 e.pack()
 
                 def mymodify():
+                  try:
                     self.processed_image = Image.fromarray(
                         Noise.rayl_noise(np.array(self.original_image), float(e.get())))
                     self.compare_images(self.original_image, self.processed_image)
+                    messagebox.showinfo("success", "Success!")
+                  except Exception as a:
+                    messagebox.showerror("Error", "Wrong input")
+
+
 
                 button = tk.Button(frame, text="ok", command=mymodify)
                 button.pack()
